@@ -24,6 +24,7 @@
 </head>
 <body>
   <a class="back" href="/">&larr; 전체 경기</a>
+  {% include "_nav.html" %}
 
   <form class="search" action="/search" method="get">
     <input type="text" name="q" value="{{ q }}" placeholder="팀 또는 선수 검색" maxlength="50">

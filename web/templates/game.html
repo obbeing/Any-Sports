@@ -21,10 +21,20 @@
     th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #eee; }
     th { color: #666; font-size: 13px; }
     .empty { color: #888; padding: 16px 8px; }
+    .comment { padding: 12px 8px; border-bottom: 1px solid #eee; }
+    .comment .who { font-size: 13px; color: #666; }
+    .comment .body { margin-top: 4px; white-space: pre-wrap; word-break: break-word; }
+    .cform textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px;
+                      border: 1px solid #ccc; border-radius: 8px; min-height: 70px; font-family: inherit; }
+    .cform button { margin-top: 8px; padding: 10px 16px; font-size: 15px; border: 0; border-radius: 8px;
+                    background: #222; color: #fff; cursor: pointer; }
+    .hint { font-size: 14px; color: #888; padding: 8px; }
+    .hint a { text-decoration: underline; }
   </style>
 </head>
 <body>
   <a class="back" href="/">&larr; 전체 경기</a>
+  {% include "_nav.html" %}
   <div class="sport">{{ game.sport }}</div>
 
   <div class="board">
@@ -53,5 +63,24 @@
   {% else %}
     <div class="empty">등록된 선수 기록이 없습니다.</div>
   {% endif %}
+
+  <h2>응원 댓글 ({{ comments|length }})</h2>
+  {% if current_user %}
+    <form class="cform" action="/game/{{ game.id }}/comment" method="post">
+      <textarea name="content" maxlength="300" placeholder="응원 한마디를 남겨보세요 (300자 이내)" required></textarea>
+      <button type="submit">댓글 등록</button>
+    </form>
+  {% else %}
+    <div class="hint"><a href="/login">로그인</a> 후 댓글을 남길 수 있습니다.</div>
+  {% endif %}
+
+  {% for c in comments %}
+    <div class="comment">
+      <div class="who">{{ c.username }} · {{ c.created_at.strftime('%m-%d %H:%M') }}</div>
+      <div class="body">{{ c.content }}</div>
+    </div>
+  {% else %}
+    <div class="empty">아직 댓글이 없습니다.</div>
+  {% endfor %}
 </body>
 </html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if mode == 'login' %}로그인{% else %}회원가입{% endif %} - Any-Sports</title>
+  <style>
+    body { font-family: sans-serif; max-width: 420px; margin: 24px auto; padding: 0 16px; color: #222; }
+    a { color: inherit; text-decoration: none; }
+    .back { font-size: 14px; color: #666; }
+    h1 { margin: 24px 0 16px; }
+    label { display: block; margin: 14px 0 4px; font-size: 14px; color: #555; }
+    input { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; border: 1px solid #ccc; border-radius: 8px; }
+    button.primary { width: 100%; margin-top: 20px; padding: 12px; font-size: 15px; border: 0; border-radius: 8px; background: #222; color: #fff; cursor: pointer; }
+    .alt { margin-top: 16px; font-size: 14px; color: #666; text-align: center; }
+    .alt a { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">&larr; 전체 경기</a>
+  {% include "_nav.html" %}
+
+  <h1>{% if mode == 'login' %}로그인{% else %}회원가입{% endif %}</h1>
+  <form action="/{{ mode }}" method="post">
+    <label for="username">아이디</label>
+    <input id="username" type="text" name="username" maxlength="30" autocomplete="username" required>
+    <label for="password">비밀번호</label>
+    <input id="password" type="password" name="password" maxlength="100"
+           autocomplete="{% if mode == 'login' %}current-password{% else %}new-password{% endif %}" required>
+    <button class="primary" type="submit">{% if mode == 'login' %}로그인{% else %}가입하기{% endif %}</button>
+  </form>
+  <div class="alt">
+    {% if mode == 'login' %}계정이 없나요? <a href="/register">회원가입</a>
+    {% else %}이미 계정이 있나요? <a href="/login">로그인</a>{% endif %}
+  </div>
+</body>
+</html>
