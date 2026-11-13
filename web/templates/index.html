@@ -17,10 +17,17 @@
     .badge { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #eee; }
     .badge.live { background: #ffe0e0; color: #c00; }
     .time { font-size: 12px; color: #888; }
+    .search { display: flex; gap: 8px; margin: 16px 0 8px; }
+    .search input { flex: 1; padding: 10px 12px; font-size: 15px; border: 1px solid #ccc; border-radius: 8px; }
+    .search button { padding: 10px 16px; font-size: 15px; border: 0; border-radius: 8px; background: #222; color: #fff; cursor: pointer; }
   </style>
 </head>
 <body>
   <h1><a href="/">Any-Sports</a></h1>
+  <form class="search" action="/search" method="get">
+    <input type="text" name="q" placeholder="팀 또는 선수 검색" maxlength="50">
+    <button type="submit">검색</button>
+  </form>
   <p>오늘의 경기 점수</p>
 
   {% for sport, games in games_by_sport.items() %}

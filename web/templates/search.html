@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>검색{% if q %}: {{ q }}{% endif %} - Any-Sports</title>
+  <style>
+    body { font-family: sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; color: #222; }
+    a { color: inherit; text-decoration: none; }
+    .back { font-size: 14px; color: #666; }
+    .search { display: flex; gap: 8px; margin: 16px 0 8px; }
+    .search input { flex: 1; padding: 10px 12px; font-size: 15px; border: 1px solid #ccc; border-radius: 8px; }
+    .search button { padding: 10px 16px; font-size: 15px; border: 0; border-radius: 8px; background: #222; color: #fff; cursor: pointer; }
+    h2 { margin-top: 28px; border-bottom: 2px solid #ddd; padding-bottom: 4px; }
+    .row { display: flex; align-items: center; justify-content: space-between;
+           padding: 12px 8px; border-bottom: 1px solid #eee; }
+    .row:hover { background: #f7f7f7; }
+    .score { font-weight: bold; min-width: 80px; text-align: center; }
+    .sub { font-size: 12px; color: #888; }
+    .badge { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #eee; }
+    .badge.live { background: #ffe0e0; color: #c00; }
+    .empty { color: #888; padding: 16px 8px; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">&larr; 전체 경기</a>
+
+  <form class="search" action="/search" method="get">
+    <input type="text" name="q" value="{{ q }}" placeholder="팀 또는 선수 검색" maxlength="50">
+    <button type="submit">검색</button>
+  </form>
+
+  {% if not q %}
+    <div class="empty">검색어를 입력해 주세요.</div>
+  {% else %}
+    <h2>경기 ({{ games|length }})</h2>
+    {% if games %}
+      {% for g in games %}
+        <a href="/game/{{ g.id }}" class="row">
+          <div>
+            {{ g.home_team }} vs {{ g.away_team }}
+            <div class="sub">{{ g.sport }} · {{ g.played_at.strftime('%H:%M') }}</div>
+          </div>
+          <div class="score">
+            {% if g.status == '예정' %}-{% else %}{{ g.home_score }} : {{ g.away_score }}{% endif %}
+          </div>
+          <span class="badge {% if g.status == '진행중' %}live{% endif %}">{{ g.status }}</span>
+        </a>
+      {% endfor %}
+    {% else %}
+      <div class="empty">일치하는 경기가 없습니다.</div>
+    {% endif %}
+
+    <h2>선수 ({{ players|length }})</h2>
+    {% if players %}
+      {% for p in players %}
+        <div class="row">
+          <div>{{ p.name }}<div class="sub">{{ p.sport }} · {{ p.team }}</div></div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty">일치하는 선수가 없습니다.</div>
+    {% endif %}
+  {% endif %}
+</body>
+</html>

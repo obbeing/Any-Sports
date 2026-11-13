@@ -1,6 +1,6 @@
 import os
 import pymysql
-from flask import Flask, abort, render_template
+from flask import Flask, abort, render_template, request
 
 app = Flask(__name__)
 
@@ -76,6 +76,49 @@ def game_detail(game_id):
         conn.close()
 
     return render_template("game.html", game=game, stats=stats)
+
+
+@app.route("/search")
+def search():
+    q = request.args.get("q", "").strip()
+    games, players = [], []
+
+    if q:
+        like = f"%{q}%"
+        conn = get_conn()
+        try:
+            with conn.cursor() as cur:
+                # 사용자 입력은 반드시 %s 파라미터로 전달한다 (SQL Injection 방지)
+                cur.execute(
+                    """
+                    SELECT g.id, s.name AS sport, g.home_team, g.away_team,
+                           g.home_score, g.away_score, g.status, g.played_at
+                    FROM games g
+                    JOIN sports s ON s.id = g.sport_id
+                    WHERE g.home_team LIKE %s OR g.away_team LIKE %s
+                    ORDER BY g.played_at
+                    LIMIT 20
+                    """,
+                    (like, like),
+                )
+                games = cur.fetchall()
+
+                cur.execute(
+                    """
+                    SELECT p.id, p.name, p.team, s.name AS sport
+                    FROM players p
+                    JOIN sports s ON s.id = p.sport_id
+                    WHERE p.name LIKE %s OR p.team LIKE %s
+                    ORDER BY p.name
+                    LIMIT 20
+                    """,
+                    (like, like),
+                )
+                players = cur.fetchall()
+        finally:
+            conn.close()
+
+    return render_template("search.html", q=q, games=games, players=players)
 
 
 if __name__ == "__main__":
