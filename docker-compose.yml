@@ -43,5 +43,18 @@ services:
     depends_on:
       - web
 
+  # 테스트 트래픽 생성 도구: docker compose up 으로는 뜨지 않고 run 으로만 실행된다
+  traffic:
+    image: python:3.12-slim
+    profiles: ["tools"]
+    environment:
+      BASE_URL: http://nginx
+    volumes:
+      - ./scripts:/scripts:ro
+      - ./docs:/docs
+    depends_on:
+      - nginx
+    entrypoint: ["python", "/scripts/traffic.py"]
+
 volumes:
   db_data:
