@@ -115,6 +115,87 @@ services:
       elasticsearch:
         condition: service_healthy
 
+  # ---------- 인프라 지표 관제 (Zabbix + Grafana) ----------
+  # 평소에는 뜨지 않고 `docker compose --profile monitoring up -d` 로만 실행된다
+  zabbix-db:
+    image: postgres:16-alpine
+    container_name: sports-zbx-db
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: ${ZBX_DB_PASSWORD}
+      POSTGRES_DB: zabbix
+    volumes:
+      - zbx_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zabbix"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  zabbix-server:
+    image: zabbix/zabbix-server-pgsql:alpine-7.0-latest
+    container_name: sports-zbx-server
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    environment:
+      DB_SERVER_HOST: zabbix-db
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: ${ZBX_DB_PASSWORD}
+      POSTGRES_DB: zabbix
+    depends_on:
+      zabbix-db:
+        condition: service_healthy
+
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest
+    container_name: sports-zbx-web
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    environment:
+      ZBX_SERVER_HOST: zabbix-server
+      DB_SERVER_HOST: zabbix-db
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: ${ZBX_DB_PASSWORD}
+      POSTGRES_DB: zabbix
+      PHP_TZ: Asia/Seoul
+    ports:
+      - "127.0.0.1:8081:8080"
+    depends_on:
+      - zabbix-server
+
+  # 감시 대상(= Docker가 돌아가는 리눅스 VM)에 설치되는 에이전트
+  zabbix-agent:
+    image: zabbix/zabbix-agent2:alpine-7.0-latest
+    container_name: sports-zbx-agent
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    privileged: true
+    pid: host
+    environment:
+      ZBX_HOSTNAME: sports-docker-host
+      ZBX_SERVER_HOST: zabbix-server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro   # 컨테이너 상태 수집용 (실습 환경 한정)
+    depends_on:
+      - zabbix-server
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: sports-grafana
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_INSTALL_PLUGINS: alexanderzobnin-zabbix-app
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - zabbix-web
+
   # 테스트 트래픽 생성 도구: docker compose up 으로는 뜨지 않고 run 으로만 실행된다
   traffic:
     image: python:3.12-slim
@@ -136,3 +217,5 @@ volumes:
   filebeat_data:
   shared:
   detector_logs:
+  zbx_db:
+  grafana_data:

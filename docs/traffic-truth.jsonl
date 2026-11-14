@@ -16,3 +16,4 @@
 {"scenario": "bot", "count": 30, "stats": {"bot_request": 30}, "started_at": "2026-11-14T10:10:26+00:00", "ended_at": "2026-11-14T10:10:29+00:00"}
 {"scenario": "spam", "count": 20, "stats": {"comment_banned": 10, "comment_normal": 10}, "started_at": "2026-11-14T10:11:18+00:00", "ended_at": "2026-11-14T10:11:21+00:00"}
 {"scenario": "keyword_flood", "count": 40, "stats": {"keyword_flood": 40}, "started_at": "2026-11-14T10:11:25+00:00", "ended_at": "2026-11-14T10:11:30+00:00"}
+{"scenario": "normal", "count": 300, "stats": {"normal_search": 214, "normal_view": 86}, "started_at": "2026-11-14T10:12:51+00:00", "ended_at": "2026-11-14T10:13:23+00:00"}
