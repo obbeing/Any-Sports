@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import sys
+import time
 from datetime import datetime, timezone
 
 import pymysql
@@ -81,6 +82,34 @@ def find_banned_word(text):
         if word.lower() in normalized:
             return word
     return None
+
+
+# ---------- 차단 목록 (탐지기가 갱신하는 /shared/blocklist.json) ----------
+BLOCKLIST_FILE = os.environ.get("BLOCKLIST_FILE", "/shared/blocklist.json")
+
+
+def blocked_entry(ip):
+    """차단 중인 IP면 차단 정보를, 아니면 None을 돌려준다. 파일이 없거나 깨져 있으면 차단하지 않는다."""
+    try:
+        with open(BLOCKLIST_FILE, encoding="utf-8") as f:
+            entry = json.load(f).get(ip)
+    except (OSError, ValueError, AttributeError):
+        return None
+    if entry and entry.get("until", 0) > time.time():
+        return entry
+    return None
+
+
+@app.before_request
+def reject_blocked_ip():
+    # 주의: X-Forwarded-For 첫 값은 클라이언트가 조작할 수 있다. 실습 환경에서 가짜 IP를
+    # 쓰기 위해 이렇게 두었고, 실제 서비스라면 신뢰하는 프록시가 덧붙인 값만 사용해야 한다.
+    ip = client_ip()
+    entry = blocked_entry(ip)
+    if entry:
+        log_event("warning", "blocked_request", ip=ip, rule=entry.get("rule"),
+                  path=clean(request.path, 100))
+        return "접근이 차단되었습니다. (비정상 요청이 감지되었습니다)", 403
 
 
 @app.context_processor

@@ -8,3 +8,11 @@
 {"scenario": "injection", "count": 20, "stats": {"injection": 20}, "started_at": "2026-11-14T08:57:44+00:00", "ended_at": "2026-11-14T08:57:47+00:00"}
 {"scenario": "bruteforce", "count": 30, "stats": {"login_fail_attempt": 30}, "started_at": "2026-11-14T08:57:50+00:00", "ended_at": "2026-11-14T08:57:53+00:00"}
 {"scenario": "spam", "count": 20, "stats": {"comment_banned": 13, "comment_normal": 7}, "started_at": "2026-11-14T08:57:56+00:00", "ended_at": "2026-11-14T08:57:59+00:00"}
+{"scenario": "bruteforce", "count": 30, "stats": {"login_fail_attempt": 30}, "started_at": "2026-11-14T10:06:13+00:00", "ended_at": "2026-11-14T10:06:16+00:00"}
+{"scenario": "bruteforce", "count": 5, "stats": {"login_fail_attempt": 5}, "started_at": "2026-11-14T10:07:50+00:00", "ended_at": "2026-11-14T10:07:51+00:00"}
+{"scenario": "bruteforce", "count": 30, "stats": {"login_fail_attempt": 30}, "started_at": "2026-11-14T10:09:15+00:00", "ended_at": "2026-11-14T10:09:18+00:00"}
+{"scenario": "bruteforce", "count": 5, "stats": {"login_fail_attempt": 5}, "started_at": "2026-11-14T10:09:51+00:00", "ended_at": "2026-11-14T10:09:52+00:00"}
+{"scenario": "injection", "count": 20, "stats": {"injection": 20}, "started_at": "2026-11-14T10:10:19+00:00", "ended_at": "2026-11-14T10:10:21+00:00"}
+{"scenario": "bot", "count": 30, "stats": {"bot_request": 30}, "started_at": "2026-11-14T10:10:26+00:00", "ended_at": "2026-11-14T10:10:29+00:00"}
+{"scenario": "spam", "count": 20, "stats": {"comment_banned": 10, "comment_normal": 10}, "started_at": "2026-11-14T10:11:18+00:00", "ended_at": "2026-11-14T10:11:21+00:00"}
+{"scenario": "keyword_flood", "count": 40, "stats": {"keyword_flood": 40}, "started_at": "2026-11-14T10:11:25+00:00", "ended_at": "2026-11-14T10:11:30+00:00"}

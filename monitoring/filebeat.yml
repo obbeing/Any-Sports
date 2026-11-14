@@ -59,6 +59,26 @@ filebeat.inputs:
             - '2026-11-14T00:07:42.737+00:00'
           ignore_failure: true
 
+  - type: filestream
+    id: detector-events
+    paths:
+      - /logs/detector/detector.json.log
+    parsers:
+      - ndjson:
+          target: "detector"
+          add_error_key: true
+    fields:
+      log_type: detector_event
+    fields_under_root: true
+    processors:
+      - timestamp:
+          field: detector.ts
+          layouts:
+            - '2006-01-02T15:04:05Z07:00'
+          test:
+            - '2026-11-14T00:07:42+00:00'
+          ignore_failure: true
+
 output.elasticsearch:
   hosts: ["http://elasticsearch:9200"]
   indices:
@@ -68,6 +88,9 @@ output.elasticsearch:
     - index: "any-sports-app-%{+yyyy.MM.dd}"
       when.equals:
         log_type: app_event
+    - index: "any-sports-detector-%{+yyyy.MM.dd}"
+      when.equals:
+        log_type: detector_event
 
 # 인덱스 이름을 직접 정하므로 ILM과 기본 템플릿은 사용하지 않는다 (동적 매핑 사용)
 setup.ilm.enabled: false

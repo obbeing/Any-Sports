@@ -19,3 +19,4 @@ create() {
 
 create any-sports-nginx 'any-sports-nginx-*' 'Nginx 접속 로그'
 create any-sports-app 'any-sports-app-*' '앱 이벤트 로그'
+create any-sports-detector 'any-sports-detector-*' '탐지 이벤트 로그'
