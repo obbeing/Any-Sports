@@ -1,7 +1,9 @@
+import json
 import logging
 import os
 import re
 import sys
+from datetime import datetime, timezone
 
 import pymysql
 from flask import (Flask, abort, flash, redirect, render_template, request,
@@ -14,13 +16,32 @@ if not app.secret_key:
     raise RuntimeError("SECRET_KEY 환경변수가 필요합니다 (.env에 SECRET_KEY를 추가하세요)")
 app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax")
 
-# 앱 이벤트 로그: key=value 형식으로 stdout에 남긴다 (나중에 ELK로 수집/파싱)
-logging.basicConfig(
-    stream=sys.stdout,
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s",
-)
+# 앱 이벤트 로그: JSON 한 줄씩 stdout과 파일에 남긴다 (ELK가 파일을 수집)
+LOG_DIR = os.environ.get("APP_LOG_DIR", "/var/log/app")
 log = logging.getLogger("sports")
+log.setLevel(logging.INFO)
+log.propagate = False
+_fmt = logging.Formatter("%(message)s")
+_sh = logging.StreamHandler(sys.stdout)
+_sh.setFormatter(_fmt)
+log.addHandler(_sh)
+try:
+    os.makedirs(LOG_DIR, exist_ok=True)
+    _fh = logging.FileHandler(os.path.join(LOG_DIR, "app.json.log"), encoding="utf-8")
+    _fh.setFormatter(_fmt)
+    log.addHandler(_fh)
+except OSError:
+    pass  # 로그 디렉터리를 쓸 수 없어도 서비스는 계속 동작한다
+
+
+def log_event(level, event, **fields):
+    record = {
+        "ts": datetime.now(timezone.utc).isoformat(timespec="milliseconds"),
+        "level": level.upper(),
+        "event": event,
+    }
+    record.update(fields)
+    log.log(getattr(logging, level.upper()), json.dumps(record, ensure_ascii=False))
 
 BANNED_FILE = os.path.join(os.path.dirname(__file__), "banned_words.txt")
 USERNAME_RE = re.compile(r"^[A-Za-z0-9_]{3,30}$")
@@ -213,7 +234,7 @@ def register():
         finally:
             conn.close()
 
-        log.info("event=register user=%s ip=%s", clean(username), client_ip())
+        log_event("info", "register", user=clean(username), ip=client_ip())
         flash("가입이 완료되었습니다. 로그인해 주세요.")
         return redirect("/login")
 
@@ -241,11 +262,11 @@ def login():
             session.clear()
             session["user_id"] = user["id"]
             session["username"] = username
-            log.info("event=login_ok user=%s ip=%s", clean(username), client_ip())
+            log_event("info", "login_ok", user=clean(username), ip=client_ip())
             return redirect("/")
 
         # 실패 로그는 탐지 규칙(무차별 대입)의 핵심 재료
-        log.warning("event=login_fail user=%s ip=%s", clean(username), client_ip())
+        log_event("warning", "login_fail", user=clean(username), ip=client_ip())
         flash("아이디 또는 비밀번호가 올바르지 않습니다.")
         return render_template("auth.html", mode="login"), 401
 
@@ -292,16 +313,12 @@ def add_comment(game_id):
         conn.close()
 
     if banned:
-        log.warning(
-            "event=comment_quarantined user=%s game=%s word=%s ip=%s",
-            clean(session["username"]), game_id, banned, client_ip(),
-        )
+        log_event("warning", "comment_quarantined", user=clean(session["username"]),
+                  game=game_id, word=banned, ip=client_ip())
         flash("금칙어가 포함되어 댓글이 검토 대기 상태로 처리되었습니다.")
     else:
-        log.info(
-            "event=comment_ok user=%s game=%s ip=%s",
-            clean(session["username"]), game_id, client_ip(),
-        )
+        log_event("info", "comment_ok", user=clean(session["username"]),
+                  game=game_id, ip=client_ip())
     return redirect(f"/game/{game_id}")
 
 
