@@ -209,6 +209,14 @@ services:
       - nginx
     entrypoint: ["python", "/scripts/traffic.py"]
 
+  # 장애 재현 도구 (평소에는 뜨지 않는다): CPU 부하
+  fault-cpu:
+    image: python:3.12-slim
+    profiles: ["tools"]
+    volumes:
+      - ./scripts:/scripts:ro
+    entrypoint: ["python", "/scripts/fault_cpu.py"]
+
 volumes:
   db_data:
   nginx_logs:
