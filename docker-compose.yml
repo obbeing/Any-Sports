@@ -173,6 +173,8 @@ services:
     restart: unless-stopped
     privileged: true
     pid: host
+    tmpfs:
+      - /mnt/labdisk:size=200m    # 디스크 가득 참 시나리오용 200MB 가상 디스크 (RAM 사용, 재시작하면 비워짐)
     environment:
       ZBX_HOSTNAME: sports-docker-host
       ZBX_SERVER_HOST: zabbix-server
